@@ -16,36 +16,87 @@ interface AttendanceRecord {
   name: string
 }
 
+// Add this interface
+interface StudentData {
+  name: string;
+  id: string;
+}
+
+// Add this function before the StudentPortal component
+const getSemesterFromId = (id: string): number => {
+  const prefix = id.substring(0, 2);
+  switch (prefix) {
+    case '24':
+      return 3;
+    case '23':
+      return 5;
+    case '22':
+      return 7;
+    default:
+      return 1;
+  }
+}
+
 export default function StudentPortal() {
   const [universityId, setUniversityId] = useState("")
   const [displayedId, setDisplayedId] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
   const [error, setError] = useState<string | null>(null)
+  // Add this state
+  const [studentName, setStudentName] = useState<string>("")
+  const [currentSemester, setCurrentSemester] = useState<number>(1);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
       try {
-        setError(null)
-        const response = await fetch(`/api/attendance?studentId=${universityId}`)
+        setError(null) // Clear any previous errors
         
+        // Set the semester based on ID
+        setCurrentSemester(getSemesterFromId(universityId))
+        
+        // Read the student names CSV file
+        const response = await fetch(`/api/student?studentId=${universityId}`)
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          if (response.status === 404) {
+            setError(`ID ${universityId} not found in records`)
+            setIsSubmitted(false)
+            setAttendanceData([])
+            setDisplayedId("")
+            setStudentName("")
+            return
+          }
+          throw new Error(`Failed to fetch data. Please try again.`)
         }
+
+        const studentData = await response.json()
         
-        const data = await response.json()
+        // Set the student name if found
+        if (studentData.name) {
+          setStudentName(studentData.name)
+        }
+
+        // Fetch attendance data
+        const attendanceResponse = await fetch(`/api/attendance?studentId=${universityId}`)
+        if (!attendanceResponse.ok) {
+          throw new Error(`Failed to fetch attendance data`)
+        }
+        const attendanceData = await attendanceResponse.json()
         
-        if (data.length === 0) {
+        if (attendanceData.length === 0) {
           setError('No attendance records found for this ID')
+          setIsSubmitted(false)
           return
         }
         
-        setAttendanceData(data)
+        setAttendanceData(attendanceData)
         setDisplayedId(universityId)
         setIsSubmitted(true)
+
       } catch (error) {
-        console.error("Error fetching attendance data:", error)
-        setError('Failed to fetch attendance data. Please try again.')
+        console.error("Error fetching data:", error)
+        setError('Failed to fetch data. Please try again.')
+        setIsSubmitted(false)
       }
     }
   }
@@ -158,7 +209,9 @@ India`
           </div>
 
           <div style={{ marginBottom: '15px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '5px' }}>Attendance Report - Semester 6</h2>
+            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '5px' }}>
+              Attendance Report - Semester {currentSemester}
+            </h2>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8pt' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid black' }}>
@@ -277,15 +330,15 @@ India`
             </div>
             <div className="flex-1 flex justify-center text-center">
               <div>
-                <h1 className="text-2xl font-bold text-white">Koneru Lakshmaiah University</h1>
+                <h1 className="text-2xl font-bold text-white">Koneru Lakshmaiah Education Foundation</h1>
                 <p className="text-red-100 text-sm">Department of CSE-4</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
                             <div className="text-right">
-                <p className="text-white font-semibold">GUTTA GNANESH</p>
-                <p className="text-red-100 text-sm">ID: {displayedId}</p>
-              </div>
+  <p className="text-white font-semibold">{studentName || 'Student Name'}</p>
+  <p className="text-red-100 text-sm">ID: {displayedId}</p>
+</div>
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
@@ -316,6 +369,11 @@ India`
                     onChange={(e) => setUniversityId(e.target.value)}
                     className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
+                  {error && (
+        <p className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
                 </div>
                 <Button 
                   onClick={handleSubmit}
@@ -334,10 +392,10 @@ India`
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-3 text-gray-800">
                     <Calendar className="w-5 h-5 text-red-700" />
-                    <span>AY: 2025-26 ODD Semester Attendance</span>
+                    <span>AY: 2025-26 {currentSemester % 2 === 1 ? 'ODD' : 'EVEN'} Semester Attendance</span>
                   </CardTitle>
                   <Badge variant="outline" className="border-red-200 text-red-800">
-                    Semester 6
+                    Semester {currentSemester}
                   </Badge>
                 </div>
                 <p className="text-gray-600 text-sm mt-2">Minimum 85% attendance required for exam eligibility</p>
