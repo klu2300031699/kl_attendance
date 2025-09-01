@@ -63,6 +63,13 @@ export default function StudentPortal() {
   const [currentSemester, setCurrentSemester] = useState<number>(1);
   // Add this state
   const [visibleSemesters, setVisibleSemesters] = useState<number>(0);
+  // Add these states after other useState declarations
+  const [counsellerDetails] = useState({
+    name: "Ashesh K",
+    designation: "Associate Professor",
+    contactNumber: "8500103040",
+    cabinNumber: "C603"
+  });
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
@@ -220,11 +227,57 @@ India`
       {/* Print-only view */}
       <div className="hidden print:block">
         <div style={{ padding: '15px', fontSize: '9pt', maxHeight: '100vh' }}>
-          <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-            <h1 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '5px' }}>Koneru Lakshmaiah Education Foundation</h1>
-            <p style={{ fontSize: '9pt', marginBottom: '2px' }}>Department of CSE-4</p>
-            <p style={{ fontSize: '9pt' }}>Student Academic Report - ID: {displayedId}</p>
-          </div>
+          <div style={{ 
+  marginBottom: '15px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '20px'
+}}>
+  {/* Logo on the left */}
+  <div style={{ 
+    width: '80px',  // Increased from 60px
+    height: '80px', // Increased from 60px
+    flexShrink: 0
+  }}>
+    <Image 
+      src="/logo.jpg" 
+      alt="KL University Logo"
+      width={80}  // Increased from 60
+      height={80} // Increased from 60
+      style={{
+        objectFit: 'contain'
+      }}
+    />
+  </div>
+
+  {/* Text content centered */}
+  <div style={{
+    flex: 1,
+    textAlign: 'center'
+  }}>
+    <h1 style={{ 
+      fontSize: '14pt', 
+      fontWeight: 'bold', 
+      marginBottom: '5px' 
+    }}>
+      Koneru Lakshmaiah Education Foundation
+    </h1>
+    <p style={{ 
+      fontSize: '9pt', 
+      marginBottom: '2px' 
+    }}>
+      Department of CSE-4
+    </p>
+    <p style={{ 
+      fontSize: '9pt' 
+    }}>
+      Student Academic Report - ID: {displayedId}
+    </p>
+  </div>
+  
+  {/* Empty div for balance */}
+  <div style={{ width: '60px', flexShrink: 0 }}></div>
+</div>
 
           <div style={{ marginBottom: '15px' }}>
             <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '5px' }}>
@@ -300,11 +353,32 @@ India`
               fontSize: '8pt',
               marginTop: '10px'
             }}>
+              {/* Counseller Details on the left in print view */}
+              <div style={{ 
+                textAlign: 'left',
+                width: '250px'
+              }}>
+                <p style={{ 
+                  fontWeight: 'bold', 
+                  marginBottom: '4px',
+                  fontSize: '8pt'
+                }}>Counseller Details:</p>
+                <div style={{ 
+                  lineHeight: '1.4',
+                  fontSize: '8pt'
+                }}>
+                  <p>Name: {counsellerDetails.name}</p>
+                  <p>Designation: {counsellerDetails.designation}</p>
+                  <p>Contact Number: {counsellerDetails.contactNumber}</p>
+                  <p>Cabin Number: {counsellerDetails.cabinNumber}</p>
+                </div>
+              </div>
+
               {/* HOD Signature in the middle */}
               <div style={{ 
                 textAlign: 'center',
                 flex: '1',
-                margin: '0 auto'
+                margin: '0 20px'
               }}>
                 <p style={{ 
                   marginBottom: '10px',
@@ -323,9 +397,8 @@ India`
 
               {/* Student Address on the right */}
               <div style={{ 
-                textAlign: 'left',  // Changed from 'right' to 'left'
-                marginLeft: 'auto',
-                width: '300px'      // Fixed width
+                textAlign: 'right',
+                width: '250px'
               }}>
                 <p style={{ 
                   fontWeight: 'bold', 
@@ -335,12 +408,11 @@ India`
                 <div style={{ 
                   lineHeight: '1.4',
                   fontSize: '8pt',
-                  whiteSpace: 'pre',    // Changed from 'pre-line' to 'pre'
-                  fontFamily: 'monospace',  // Added for consistent spacing
-                  textAlign: 'left'     // Ensure left alignment
+                  whiteSpace: 'pre-line',
+                  textAlign: 'right'
                 }}>
                   {address}
-            </div>
+                </div>
               </div>
             </div>
           </div>
@@ -353,12 +425,12 @@ India`
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center h-20">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 relative flex items-center justify-center bg-red-900 rounded-[25%] overflow-hidden">
+              <div className="w-20 h-20 relative flex items-center justify-center bg-red-900 rounded-[25%] overflow-hidden">
                 <Image 
                   src="/logo.jpg" 
                   alt="KL University Logo"
-                  width={64}
-                  height={64}
+                  width={80}    // Increased from 64
+                  height={80}   // Increased from 64
                   className="object-contain"
                   priority
                 />
@@ -536,23 +608,94 @@ India`
               <CardHeader className="bg-gray-50">
                 <CardTitle className="flex items-center space-x-3 text-gray-800">
                   <MapPin className="w-5 h-5 text-red-700" />
-                  <span>Student Information</span>
+                  <span>Student & Counsellor Information</span>
                 </CardTitle>
               </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-6">
+                {/* Student Details Section */}
                 <div>
-                  <Label htmlFor="address" className="text-sm font-medium text-gray-700 mb-2 block">
-                    Permanent Address
-                  </Label>
-                  <div
-                    className="min-h-[120px] border border-gray-300 rounded-md p-2 resize-none focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500"
-                    tabIndex={0}
-                  >
-                    {address}
+                  <CardTitle className="flex items-center space-x-3 text-gray-800 mb-4">
+                    <User className="w-5 h-5 text-red-700" />
+                    <span>Student Details</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-6 mb-6">
+                    <div>
+                      <Label className="text-xs text-gray-500">ID</Label>
+                      <p className="text-sm font-medium">{displayedId}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Name</Label>
+                      <p className="text-sm font-medium">{studentName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Gender</Label>
+                      <p className="text-sm font-medium">Male</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Category</Label>
+                      <p className="text-sm font-medium">Hosteler</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Contact</Label>
+                      <p className="text-sm font-medium">9876543210</p>
+                    </div>
                   </div>
                 </div>
 
+                {/* Address Section */}
+                <div className="border-t pt-6">
+                  <CardTitle className="flex items-center space-x-3 text-gray-800 mb-4">
+                    <MapPin className="w-5 h-5 text-red-700" />
+                    <span>Student Address</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-6">
+                    <div>
+                      <Label className="text-xs text-gray-500">House & Street</Label>
+                      <p className="text-sm font-medium">House No. 123, Sector 15</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Area</Label>
+                      <p className="text-sm font-medium">Rajiv Gandhi Nagar</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">City</Label>
+                      <p className="text-sm font-medium">Vijayawada</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">State & PIN</Label>
+                      <p className="text-sm font-medium">Andhra Pradesh - 520010</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Country</Label>
+                      <p className="text-sm font-medium">India</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Counseller Details Section */}
+                <div className="border-t pt-6">
+                  <CardTitle className="flex items-center space-x-3 text-gray-800 mb-4">
+                    <GraduationCap className="w-5 h-5 text-red-700" />
+                    <span>Counseller Details</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-6">
+                    <div>
+                      <Label className="text-xs text-gray-500">Name</Label>
+                      <p className="text-sm font-medium">{counsellerDetails.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Designation</Label>
+                      <p className="text-sm font-medium">{counsellerDetails.designation}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Contact Number</Label>
+                      <p className="text-sm font-medium">{counsellerDetails.contactNumber}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Print Button and HOD Signature Section */}
                 <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                   <Button
                     variant="outline"
