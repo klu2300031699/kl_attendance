@@ -37,6 +37,21 @@ const getSemesterFromId = (id: string): number => {
   }
 }
 
+// Add this function to determine how many semesters to show based on ID
+const getVisibleSemesters = (id: string): number => {
+  const prefix = id.substring(0, 2);
+  switch (prefix) {
+    case '24':
+      return 2;  // Show 2 semesters for 24 batch
+    case '23':
+      return 4;  // Show 4 semesters for 23 batch
+    case '22':
+      return 6;  // Show 6 semesters for 22 batch
+    default:
+      return 0;
+  }
+}
+
 export default function StudentPortal() {
   const [universityId, setUniversityId] = useState("")
   const [displayedId, setDisplayedId] = useState("")
@@ -46,6 +61,8 @@ export default function StudentPortal() {
   // Add this state
   const [studentName, setStudentName] = useState<string>("")
   const [currentSemester, setCurrentSemester] = useState<number>(1);
+  // Add this state
+  const [visibleSemesters, setVisibleSemesters] = useState<number>(0);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
@@ -54,6 +71,7 @@ export default function StudentPortal() {
         
         // Set the semester based on ID
         setCurrentSemester(getSemesterFromId(universityId))
+        setVisibleSemesters(getVisibleSemesters(universityId))
         
         // Read the student names CSV file
         const response = await fetch(`/api/student?studentId=${universityId}`)
@@ -203,7 +221,7 @@ India`
       <div className="hidden print:block">
         <div style={{ padding: '15px', fontSize: '9pt', maxHeight: '100vh' }}>
           <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-            <h1 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '5px' }}>Koneru Lakshmaiah University</h1>
+            <h1 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '5px' }}>Koneru Lakshmaiah Education Foundation</h1>
             <p style={{ fontSize: '9pt', marginBottom: '2px' }}>Department of CSE-4</p>
             <p style={{ fontSize: '9pt' }}>Student Academic Report - ID: {displayedId}</p>
           </div>
@@ -236,72 +254,94 @@ India`
             <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '3px' }}>Academic Performance</h2>
             <p style={{ marginBottom: '8px', fontSize: '9pt' }}>Overall CGPA: {overallCGPA}</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {semesterResults.map((semester, semIndex) => (
-                <div key={semIndex} style={{ border: '1px solid #eee', padding: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px', borderBottom: '1px solid #eee', paddingBottom: '2px' }}>
-                    <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
-                    <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', fontSize: '7.5pt' }}>
-                    {semester.courses.map((course, courseIndex) => (
-                      <div key={courseIndex} style={{ border: '1px solid #eee', padding: '2px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '7pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '1px' }}>
-                          {course.name}
+              {semesterResults
+                .slice(0, visibleSemesters) // Only show the required number of semesters in print view
+                .map((semester, semIndex) => (
+                  <div key={semIndex} style={{ border: '1px solid #eee', padding: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px', borderBottom: '1px solid #eee', paddingBottom: '2px' }}>
+                      <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
+                      <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', fontSize: '7.5pt' }}>
+                      {semester.courses.map((course, courseIndex) => (
+                        <div key={courseIndex} style={{ border: '1px solid #eee', padding: '2px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '7pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '1px' }}>
+                            {course.name}
+                          </div>
+                          <div style={{ 
+                            fontWeight: 'bold',
+                            color: course.status === 'F' ? '#dc2626' : '#166534',
+                            fontSize: '7.5pt'
+                          }}>
+                            {course.grade} [{course.status}]
+                          </div>
                         </div>
-                        <div style={{ 
-                          fontWeight: 'bold',
-                          color: course.status === 'F' ? '#dc2626' : '#166534',
-                          fontSize: '7.5pt'
-                        }}>
-                          {course.grade} [{course.status}]
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            fontSize: '8pt',
-            marginTop: '5px',
-            paddingTop: '5px',
-            borderTop: '1px solid #eee'
-          }}>
-            <div style={{ 
-              display: 'inline-block',
-              marginRight: '20px',
-              maxWidth: '60%'
+          <div style={{ marginBottom: '15px', marginTop: '20px' }}>
+            <h2 style={{ 
+              fontSize: '11pt', 
+              fontWeight: 'bold', 
+              marginBottom: '10px',
+              borderBottom: '1px solid #000',
+              paddingBottom: '5px'
             }}>
-              <p style={{ 
-                fontWeight: 'bold', 
-                marginBottom: '2px',
-                fontSize: '8pt'
-              }}>Student Address:</p>
-              <p style={{ 
-                lineHeight: '1.1',
-                fontSize: '8pt',
-                margin: 0
-              }}>{address.split('\n').map((line, i) => (
-                <span key={i} style={{ display: 'block' }}>{line}</span>
-              ))}</p>
-            </div>
+              Student & Counseller Details
+            </h2>
+            
             <div style={{ 
-              textAlign: 'center',
-              marginLeft: 'auto',
-              width: '120px'
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              fontSize: '8pt',
+              marginTop: '10px'
             }}>
-              <p style={{ 
-                marginBottom: '10px',
-                fontSize: '8pt'
-              }}>HOD Signature</p>
+              {/* HOD Signature in the middle */}
               <div style={{ 
-                borderBottom: '1px solid #000',
-                width: '100%'
-              }}></div>
+                textAlign: 'center',
+                flex: '1',
+                margin: '0 auto'
+              }}>
+                <p style={{ 
+                  marginBottom: '10px',
+                  fontSize: '8pt'
+                }}>HOD Signature</p>
+                <div style={{ 
+                  borderBottom: '1px solid #000',
+                  width: '120px',
+                  margin: '0 auto'
+                }}></div>
+                <p style={{
+                  marginTop: '5px',
+                  fontSize: '8pt'
+                }}>Digitally Signed</p>
+              </div>
+
+              {/* Student Address on the right */}
+              <div style={{ 
+                textAlign: 'left',  // Changed from 'right' to 'left'
+                marginLeft: 'auto',
+                width: '300px'      // Fixed width
+              }}>
+                <p style={{ 
+                  fontWeight: 'bold', 
+                  marginBottom: '4px',
+                  fontSize: '8pt'
+                }}>Student Address:</p>
+                <div style={{ 
+                  lineHeight: '1.4',
+                  fontSize: '8pt',
+                  whiteSpace: 'pre',    // Changed from 'pre-line' to 'pre'
+                  fontFamily: 'monospace',  // Added for consistent spacing
+                  textAlign: 'left'     // Ensure left alignment
+                }}>
+                  {address}
+            </div>
+              </div>
             </div>
           </div>
         </div>
@@ -457,33 +497,35 @@ India`
               </CardHeader>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {semesterResults.map((semester, semIndex) => (
-                  <div key={semIndex} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
-                      <h3 className="font-semibold text-gray-800">{semester.semester}</h3>
-                      <Badge className={`${getCGPAColor(semester.cgpa)} font-semibold`}>CGPA: {semester.cgpa}</Badge>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      {semester.courses.map((course, courseIndex) => (
-                        <div key={courseIndex} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-gray-700 mb-1 truncate" title={course.name}>{course.name}</p>
-                            <p className="text-lg font-semibold text-gray-900 mb-2">{course.grade}</p>
-                            <Badge
-                              className={`text-xs font-bold ${
-                                course.status === "P"
-                                  ? "bg-green-100 text-green-800 border-green-200"
-                                  : "bg-red-100 text-red-800 border-red-200"
-                              }`}
-                            >
-                              [{course.status}]
-                            </Badge>
+                {semesterResults
+                  .slice(0, visibleSemesters) // Only show the required number of semesters
+                  .map((semester, semIndex) => (
+                    <div key={semIndex} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+                        <h3 className="font-semibold text-gray-800">{semester.semester}</h3>
+                        <Badge className={`${getCGPAColor(semester.cgpa)} font-semibold`}>CGPA: {semester.cgpa}</Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        {semester.courses.map((course, courseIndex) => (
+                          <div key={courseIndex} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-gray-700 mb-1 truncate" title={course.name}>{course.name}</p>
+                              <p className="text-lg font-semibold text-gray-900 mb-2">{course.grade}</p>
+                              <Badge
+                                className={`text-xs font-bold ${
+                                  course.status === "P"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : "bg-red-100 text-red-800 border-red-200"
+                                }`}
+                              >
+                                [{course.status}]
+                              </Badge>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </CardContent>
           </Card>
