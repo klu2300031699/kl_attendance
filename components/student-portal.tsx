@@ -22,6 +22,19 @@ interface StudentData {
   id: string;
 }
 
+// In student-portal.tsx, add this interface after the existing ones
+interface StudentDetails {
+  name: string;
+  id: string;
+  gender: string;
+  category: string;
+  contact: string;
+  address: string;
+  counsellorName: string;
+  counsellorDesignation: string;
+  counsellorContact: string; // This will now correctly map to Mentor Contact No
+}
+
 // Add this function before the StudentPortal component
 const getSemesterFromId = (id: string): number => {
   const prefix = id.substring(0, 2);
@@ -70,17 +83,16 @@ export default function StudentPortal() {
     contactNumber: "8500103040",
     cabinNumber: "C603"
   });
+  // Add this state in the component
+  const [studentDetails, setStudentDetails] = useState<StudentDetails | null>(null);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
       try {
-        setError(null) // Clear any previous errors
-        
-        // Set the semester based on ID
+        setError(null)
         setCurrentSemester(getSemesterFromId(universityId))
         setVisibleSemesters(getVisibleSemesters(universityId))
         
-        // Read the student names CSV file
         const response = await fetch(`/api/student?studentId=${universityId}`)
         if (!response.ok) {
           if (response.status === 404) {
@@ -88,18 +100,16 @@ export default function StudentPortal() {
             setIsSubmitted(false)
             setAttendanceData([])
             setDisplayedId("")
-            setStudentName("")
+            setStudentDetails(null)
             return
           }
           throw new Error(`Failed to fetch data. Please try again.`)
         }
 
         const studentData = await response.json()
-        
-        // Set the student name if found
-        if (studentData.name) {
-          setStudentName(studentData.name)
-        }
+        setStudentDetails(studentData)
+        setStudentName(studentData.name)
+        setDisplayedId(studentData.id)
 
         // Fetch attendance data
         const attendanceResponse = await fetch(`/api/attendance?studentId=${universityId}`)
@@ -303,38 +313,73 @@ India`
             </table>
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '3px' }}>Academic Performance</h2>
-            <p style={{ marginBottom: '8px', fontSize: '9pt' }}>Overall CGPA: {overallCGPA}</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {semesterResults
-                .slice(0, visibleSemesters) // Only show the required number of semesters in print view
-                .map((semester, semIndex) => (
-                  <div key={semIndex} style={{ border: '1px solid #eee', padding: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px', borderBottom: '1px solid #eee', paddingBottom: '2px' }}>
-                      <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
-                      <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px', fontSize: '7.5pt' }}>
-                      {semester.courses.map((course, courseIndex) => (
-                        <div key={courseIndex} style={{ border: '1px solid #eee', padding: '2px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '7pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '1px' }}>
-                            {course.name}
-                          </div>
-                          <div style={{ 
-                            fontWeight: 'bold',
-                            color: course.status === 'F' ? '#dc2626' : '#166534',
-                            fontSize: '7.5pt'
-                          }}>
-                            {course.grade} [{course.status}]
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
+          <div style={{ 
+  marginBottom: '15px',
+  paddingTop: '15px',    // Added padding
+  borderTop: '1px solid #000'  // Added border
+}}>
+  <h2 style={{ 
+    fontSize: '11pt', 
+    fontWeight: 'bold', 
+    marginBottom: '3px' 
+  }}>Academic Performance</h2>
+  <p style={{ marginBottom: '8px', fontSize: '9pt' }}>Overall CGPA: {overallCGPA}</p>
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+    {semesterResults
+      .slice(0, visibleSemesters)
+      .map((semester, semIndex) => (
+        <div key={semIndex} style={{ 
+          border: '2px solid #000',  // Changed from 1px to 2px and #eee to #000
+          padding: '8px',            // Increased padding
+          borderRadius: '4px'        // Added slight border radius
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '4px', 
+            borderBottom: '1.5px solid #000',  // Made bottom border thicker
+            paddingBottom: '4px' 
+          }}>
+            <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
+            <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
           </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(3, 1fr)', 
+            gap: '4px', 
+            fontSize: '7.5pt' 
+          }}>
+            {semester.courses.map((course, courseIndex) => (
+              <div key={courseIndex} style={{ 
+                border: '1px solid #666',  // Changed from #eee to #666
+                padding: '3px', 
+                textAlign: 'center',
+                backgroundColor: '#fff'
+              }}>
+                <div style={{ 
+                  fontSize: '7pt', 
+                  whiteSpace: 'nowrap', 
+                  overflow: 'hidden', 
+                  textOverflow: 'ellipsis', 
+                  marginBottom: '1px' 
+                }}>
+                  {course.name}
+                </div>
+                <div style={{ 
+                  fontWeight: 'bold',
+                  color: course.status === 'F' ? '#dc2626' : '#166534',
+                  fontSize: '7.5pt'
+                }}>
+                  {course.grade} [{course.status}]
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+  </div>
+</div>
 
           <div style={{ marginBottom: '15px', marginTop: '20px' }}>
             <h2 style={{ 
@@ -348,74 +393,77 @@ India`
             </h2>
             
             <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              fontSize: '8pt',
-              marginTop: '10px'
-            }}>
-              {/* Counseller Details on the left in print view */}
-              <div style={{ 
-                textAlign: 'left',
-                width: '250px'
-              }}>
-                <p style={{ 
-                  fontWeight: 'bold', 
-                  marginBottom: '4px',
-                  fontSize: '8pt'
-                }}>Counseller Details:</p>
-                <div style={{ 
-                  lineHeight: '1.4',
-                  fontSize: '8pt'
-                }}>
-                  <p>Name: {counsellerDetails.name}</p>
-                  <p>Designation: {counsellerDetails.designation}</p>
-                  <p>Contact Number: {counsellerDetails.contactNumber}</p>
-                  <p>Cabin Number: {counsellerDetails.cabinNumber}</p>
-                </div>
-              </div>
+  display: 'flex', 
+  justifyContent: 'space-between', 
+  fontSize: '8pt',
+  marginTop: '10px'
+}}>
+  {/* Counseller Details on the left */}
+  <div style={{ 
+    textAlign: 'left',
+    width: '45%'
+  }}>
+    <p style={{ 
+      fontWeight: 'bold', 
+      marginBottom: '4px',
+      fontSize: '8pt'
+    }}>Counseller Details:</p>
+    <div style={{ 
+      lineHeight: '1.4',
+      fontSize: '8pt'
+    }}>
+      <p>Name: {studentDetails?.counsellorName}</p>
+      <p>Designation: {studentDetails?.counsellorDesignation}</p>
+      <p>Contact Number: {studentDetails?.counsellorContact}</p>
+    </div>
+  </div>
 
-              {/* HOD Signature in the middle */}
-              <div style={{ 
-                textAlign: 'center',
-                flex: '1',
-                margin: '0 20px'
-              }}>
-                <p style={{ 
-                  marginBottom: '10px',
-                  fontSize: '8pt'
-                }}>HOD Signature</p>
-                <div style={{ 
-                  borderBottom: '1px solid #000',
-                  width: '120px',
-                  margin: '0 auto'
-                }}></div>
-                <p style={{
-                  marginTop: '5px',
-                  fontSize: '8pt'
-                }}>Digitally Signed</p>
-              </div>
-
-              {/* Student Address on the right */}
-              <div style={{ 
-                textAlign: 'right',
-                width: '250px'
-              }}>
-                <p style={{ 
-                  fontWeight: 'bold', 
-                  marginBottom: '4px',
-                  fontSize: '8pt'
-                }}>Student Address:</p>
-                <div style={{ 
-                  lineHeight: '1.4',
-                  fontSize: '8pt',
-                  whiteSpace: 'pre-line',
-                  textAlign: 'right'
-                }}>
-                  {address}
-                </div>
-              </div>
-            </div>
+  {/* Student Address on the right */}
+  <div style={{ 
+    textAlign: 'left',
+    width: '45%'
+  }}>
+    <p style={{ 
+      fontWeight: 'bold', 
+      marginBottom: '4px',
+      fontSize: '8pt'
+    }}>Student Address:</p>
+    <div style={{ 
+      lineHeight: '1.4',
+      fontSize: '8pt',
+      whiteSpace: 'pre-line',
+      textAlign: 'left'
+    }}>
+      {studentDetails?.address}
+    </div>
+  </div>
+</div>
           </div>
+
+          <div style={{ marginTop: '20px', paddingTop: '10px' }}>  {/* Removed borderTop */}
+  <div style={{ 
+    fontSize: '8pt',
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%'
+  }}>
+    <div style={{ width: '200px' }}>
+      <p style={{ 
+        fontWeight: 'bold', 
+        marginBottom: '4px' 
+      }}>CSE-4 HOD Details:</p>
+      <div style={{ lineHeight: '1.4' }}>
+        <p>Name: Dr.T Pavan Kumar</p>
+        <p>Cabin: C603</p>
+        <p style={{ marginTop: '8px' }}>Signature:</p>
+        <div style={{ 
+          width: '120px', 
+          marginTop: '15px'
+        }}></div>
+      </div>
+    </div>
+  </div>
+</div>
         </div>
       </div>
 
@@ -622,23 +670,23 @@ India`
                   <div className="flex items-center space-x-6 mb-6">
                     <div>
                       <Label className="text-xs text-gray-500">ID</Label>
-                      <p className="text-sm font-medium">{displayedId}</p>
+                      <p className="text-sm font-medium">{studentDetails?.id}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Name</Label>
-                      <p className="text-sm font-medium">{studentName}</p>
+                      <p className="text-sm font-medium">{studentDetails?.name}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Gender</Label>
-                      <p className="text-sm font-medium">Male</p>
+                      <p className="text-sm font-medium">{studentDetails?.gender}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Category</Label>
-                      <p className="text-sm font-medium">Hosteler</p>
+                      <p className="text-sm font-medium">{studentDetails?.category}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Contact</Label>
-                      <p className="text-sm font-medium">9876543210</p>
+                      <p className="text-sm font-medium">{studentDetails?.contact}</p>
                     </div>
                   </div>
                 </div>
@@ -649,27 +697,10 @@ India`
                     <MapPin className="w-5 h-5 text-red-700" />
                     <span>Student Address</span>
                   </CardTitle>
-                  <div className="flex items-center space-x-6">
-                    <div>
-                      <Label className="text-xs text-gray-500">House & Street</Label>
-                      <p className="text-sm font-medium">House No. 123, Sector 15</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Area</Label>
-                      <p className="text-sm font-medium">Rajiv Gandhi Nagar</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">City</Label>
-                      <p className="text-sm font-medium">Vijayawada</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">State & PIN</Label>
-                      <p className="text-sm font-medium">Andhra Pradesh - 520010</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Country</Label>
-                      <p className="text-sm font-medium">India</p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium mt-1 whitespace-pre-line">
+                      {studentDetails?.address}
+                    </p>
                   </div>
                 </div>
 
@@ -682,15 +713,15 @@ India`
                   <div className="flex items-center space-x-6">
                     <div>
                       <Label className="text-xs text-gray-500">Name</Label>
-                      <p className="text-sm font-medium">{counsellerDetails.name}</p>
+                      <p className="text-sm font-medium">{studentDetails?.counsellorName}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Designation</Label>
-                      <p className="text-sm font-medium">{counsellerDetails.designation}</p>
+                      <p className="text-sm font-medium">{studentDetails?.counsellorDesignation}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Contact Number</Label>
-                      <p className="text-sm font-medium">{counsellerDetails.contactNumber}</p>
+                      <p className="text-sm font-medium">{studentDetails?.counsellorContact || 'Not Available'}</p>
                     </div>
                   </div>
                 </div>

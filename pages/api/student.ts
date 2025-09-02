@@ -6,6 +6,13 @@ import path from 'path'
 type StudentResponse = {
   name: string;
   id: string;
+  gender: string;
+  category: string;
+  contact: string;
+  address: string;
+  counsellorName: string;
+  counsellorDesignation: string;
+  counsellorContact: string;
 }
 
 export default function handler(
@@ -23,30 +30,54 @@ export default function handler(
   }
 
   try {
-    const csvFilePath = path.join(process.cwd(), 'components', 'Y24-Students name.csv')
+    const csvFilePath = path.join(process.cwd(), 'components', 'Y24-EntireData.csv')
     const fileContent = readFileSync(csvFilePath, 'utf-8')
     
-    type StudentRecord = {
-      Name: string;
-      'University ID': string;
-      [key: string]: string;
+    // Update the type definition to match exact CSV column names
+    type CsvStudentRecord = {
+      'Student Unique Enrolment ID': string;
+      'Name of the student': string;
+      'Gender': string;
+      'DayScholar/Hostler': string;
+      'Contact No': string;
+      'Postel Address': string;
+      'Name of the Mentor': string;
+      'Designation': string;
+      'Mentor Contact No': string;  // This matches the exact column name in CSV
     };
 
-    const records: StudentRecord[] = parse(fileContent, {
+    const records: CsvStudentRecord[] = parse(fileContent, {
       columns: true,
       skip_empty_lines: true,
       trim: true
     });
 
-    const student = records.find((record) => record['University ID'] === studentId)
+    const student = records.find((record) => 
+      record['Student Unique Enrolment ID'].trim() === studentId.trim()
+    );
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' })
     }
 
+    // Add this before returning the response
+    console.log('Counsellor Details:', {
+      name: student['Name of the Mentor'],
+      designation: student['Designation'],
+      contact: student['Mentor Contact No']
+    });
+
+    // Update the mapping in the API response
     return res.status(200).json({
-      name: student.Name,
-      id: student['University ID']
+      id: student['Student Unique Enrolment ID'],
+      name: student['Name of the student'],
+      gender: student['Gender'],
+      category: student['DayScholar/Hostler'],
+      contact: student['Contact No'],
+      address: student['Postel Address'],
+      counsellorName: student['Name of the Mentor'],
+      counsellorDesignation: student['Designation'],
+      counsellorContact: student['Mentor Contact No']  // Use the correct column name
     })
 
   } catch (error) {
