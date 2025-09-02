@@ -440,7 +440,7 @@ India`
 </div>
           </div>
 
-          <div style={{ marginTop: '20px', paddingTop: '10px' }}>  {/* Removed borderTop */}
+          <div style={{ marginTop: '20px', paddingTop: '10px' }}>
   <div style={{ 
     fontSize: '8pt',
     display: 'flex',
@@ -458,8 +458,17 @@ India`
         <p style={{ marginTop: '8px' }}>Signature:</p>
         <div style={{ 
           width: '120px', 
-          marginTop: '15px'
-        }}></div>
+          height: '40px',
+          marginTop: '5px',
+          position: 'relative'
+        }}>
+          <Image 
+            src="/Signature.jpg"
+            alt="HOD Signature"
+            layout="fill"
+            objectFit="contain"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -741,8 +750,13 @@ India`
 
                   <div className="text-right">
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">HOD Signature</Label>
-                    <div className="w-40 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
-                      <span className="text-xs text-gray-500">Digitally Signed</span>
+                    <div className="w-40 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 relative overflow-hidden">
+                      <Image 
+                        src="/Signature.jpg"
+                        alt="HOD Signature"
+                        layout="fill"
+                        objectFit="contain"
+                      />
                     </div>
                   </div>
                 </div>
