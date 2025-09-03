@@ -380,20 +380,6 @@ const WhatsAppModal = () => {
       <div style={{ lineHeight: '1.4' }}>
         <p>Name: Dr.T Pavan Kumar</p>
         <p>Designation : HOD-CSE4</p>
-        <p style={{ marginTop: '8px' }}>Signature:</p>
-        <div style={{ 
-          width: '120px', 
-          height: '40px',
-          marginTop: '5px',
-          position: 'relative'
-        }}>
-          <Image 
-            src="/Signature.jpg"
-            alt="HOD Signature"
-            layout="fill"
-            objectFit="contain"
-          />
-        </div>
       </div>
     </div>
 
