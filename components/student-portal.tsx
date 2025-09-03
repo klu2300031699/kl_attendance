@@ -85,6 +85,10 @@ export default function StudentPortal() {
   });
   // Add this state in the component
   const [studentDetails, setStudentDetails] = useState<StudentDetails | null>(null);
+  // Add these states after other useState declarations
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [sendingReport, setSendingReport] = useState(false);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
@@ -135,6 +139,33 @@ export default function StudentPortal() {
       }
     }
   }
+
+  const handleSendReport = async () => {
+    if (!whatsappNumber) return;
+    
+    setSendingReport(true);
+    try {
+      const formattedNumber = whatsappNumber.replace(/\D/g, '');
+      // Create the WhatsApp message with student details
+      const message = `*Student Academic Report*%0a%0a` +
+        `*Student Name:* ${studentDetails?.name}%0a` +
+        `*ID:* ${studentDetails?.id}%0a` +
+        `*Semester:* ${currentSemester}%0a` ;
+      
+      // Open WhatsApp in new window
+      window.open(
+        `https://wa.me/${formattedNumber}?text=${message}`,
+        '_blank'
+      );
+      
+      setWhatsappNumber("");
+      setIsWhatsAppModalOpen(false);
+    } catch (error) {
+      console.error("Error sending report:", error);
+    } finally {
+      setSendingReport(false);
+    }
+  };
 
   const semesterResults = [
     {
@@ -232,61 +263,164 @@ India`
 
   const overallCGPA = "8.9"
 
+// Add this component before the return statement
+const WhatsAppModal = () => {
+  if (!isWhatsAppModalOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-96">
+          <h3 className="text-lg font-semibold mb-4">Send Report via WhatsApp</h3>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="whatsapp-number" className="text-sm font-medium text-gray-700">
+                WhatsApp Number
+              </Label>
+              <Input
+                id="whatsapp-number"
+                placeholder="Enter WhatsApp number with country code (e.g., 91XXXXXXXXXX)"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsWhatsAppModalOpen(false);
+                  setWhatsappNumber("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendReport}
+                disabled={!whatsappNumber || sendingReport}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {sendingReport ? "Sending..." : "Send"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
   return (
     <>
       {/* Print-only view */}
       <div className="hidden print:block">
         <div style={{ padding: '15px', fontSize: '9pt', maxHeight: '100vh' }}>
-          <div style={{ 
-  marginBottom: '15px',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '20px'
-}}>
-  {/* Logo on the left */}
+          <div style={{ marginBottom: '15px' }}>
+  {/* Header with Logo and Institution Details */}
   <div style={{ 
-    width: '80px',  // Increased from 60px
-    height: '80px', // Increased from 60px
-    flexShrink: 0
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
+    marginBottom: '20px'
   }}>
-    <Image 
-      src="/logo.jpg" 
-      alt="KL University Logo"
-      width={80}  // Increased from 60
-      height={80} // Increased from 60
-      style={{
-        objectFit: 'contain'
-      }}
-    />
+    <div style={{ 
+      width: '80px',
+      height: '80px',
+      flexShrink: 0
+    }}>
+      <Image 
+        src="/logo.jpg" 
+        alt="KL University Logo"
+        width={80}
+        height={80}
+        style={{ objectFit: 'contain' }}
+      />
+    </div>
+
+    <div style={{
+      flex: 1,
+      textAlign: 'center'
+    }}>
+      <h1 style={{ 
+        fontSize: '14pt', 
+        fontWeight: 'bold', 
+        marginBottom: '5px' 
+      }}>
+        Koneru Lakshmaiah Education Foundation
+      </h1>
+      <p style={{ 
+        fontSize: '9pt', 
+        marginBottom: '2px' 
+      }}>
+        Department of CSE-4
+      </p>
+      <p style={{ fontSize: '9pt' }}>
+        Student Academic Report - ID: {displayedId}
+      </p>
+    </div>
   </div>
 
-  {/* Text content centered */}
-  <div style={{
-    flex: 1,
-    textAlign: 'center'
+  {/* HOD Details and Student Address row */}
+  <div style={{ 
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '20px',
+    marginTop: '10px'
   }}>
-    <h1 style={{ 
-      fontSize: '14pt', 
-      fontWeight: 'bold', 
-      marginBottom: '5px' 
+    {/* CSE-4 HOD Details on left */}
+    <div style={{ 
+      width: '250px',
+      fontSize: '8pt'
     }}>
-      Koneru Lakshmaiah Education Foundation
-    </h1>
-    <p style={{ 
-      fontSize: '9pt', 
-      marginBottom: '2px' 
-    }}>
-      Department of CSE-4
-    </p>
-    <p style={{ 
-      fontSize: '9pt' 
-    }}>
-      Student Academic Report - ID: {displayedId}
-    </p>
+      <p style={{ 
+        fontWeight: 'bold', 
+        marginBottom: '4px' 
+      }}>From:</p>
+      <div style={{ lineHeight: '1.4' }}>
+        <p>Name: Dr.T Pavan Kumar</p>
+        <p>Designation : HOD-CSE4</p>
+        <p style={{ marginTop: '8px' }}>Signature:</p>
+        <div style={{ 
+          width: '120px', 
+          height: '40px',
+          marginTop: '5px',
+          position: 'relative'
+        }}>
+          <Image 
+            src="/Signature.jpg"
+            alt="HOD Signature"
+            layout="fill"
+            objectFit="contain"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Empty space in middle */}
+    <div style={{ flex: 1 }}></div>
+
+    {/* Student Address on right */}
+    <div style={{ 
+  width: '250px',
+  textAlign: 'right',
+  fontSize: '8pt'
+}}>
+  <p style={{ 
+    fontWeight: 'bold', 
+    marginBottom: '4px',
+    fontSize: '9pt'  // Increased font size
+  }}>To Address:</p>
+  <div style={{ 
+    whiteSpace: 'pre-line',
+    lineHeight: '1.5',
+    fontWeight: '600',  // Added semi-bold weight
+    fontSize: '8.5pt'   // Slightly increased font size
+  }}>
+    {studentDetails?.address}
   </div>
-  
-  {/* Empty div for balance */}
-  <div style={{ width: '60px', flexShrink: 0 }}></div>
+</div>
+  </div>
 </div>
 
           <div style={{ marginBottom: '15px' }}>
@@ -389,25 +523,22 @@ India`
               borderBottom: '1px solid #000',
               paddingBottom: '5px'
             }}>
-              Student & Counseller Details
+             Counseller Details
             </h2>
             
-            <div style={{ 
+            {/* Update the Student & Counseller Details section */}
+<div style={{ 
   display: 'flex', 
   justifyContent: 'space-between', 
   fontSize: '8pt',
   marginTop: '10px'
 }}>
-  {/* Counseller Details on the left */}
+  {/* Counseller Details only */}
   <div style={{ 
     textAlign: 'left',
-    width: '45%'
+    width: '100%'  // Changed from 45% to 100%
   }}>
-    <p style={{ 
-      fontWeight: 'bold', 
-      marginBottom: '4px',
-      fontSize: '8pt'
-    }}>Counseller Details:</p>
+    
     <div style={{ 
       lineHeight: '1.4',
       fontSize: '8pt'
@@ -417,62 +548,10 @@ India`
       <p>Contact Number: {studentDetails?.counsellorContact}</p>
     </div>
   </div>
-
-  {/* Student Address on the right */}
-  <div style={{ 
-    textAlign: 'left',
-    width: '45%'
-  }}>
-    <p style={{ 
-      fontWeight: 'bold', 
-      marginBottom: '4px',
-      fontSize: '8pt'
-    }}>Student Address:</p>
-    <div style={{ 
-      lineHeight: '1.4',
-      fontSize: '8pt',
-      whiteSpace: 'pre-line',
-      textAlign: 'left'
-    }}>
-      {studentDetails?.address}
-    </div>
-  </div>
 </div>
           </div>
 
-          <div style={{ marginTop: '20px', paddingTop: '10px' }}>
-  <div style={{ 
-    fontSize: '8pt',
-    display: 'flex',
-    justifyContent: 'center',
-    width: '100%'
-  }}>
-    <div style={{ width: '200px' }}>
-      <p style={{ 
-        fontWeight: 'bold', 
-        marginBottom: '4px' 
-      }}>CSE-4 HOD Details:</p>
-      <div style={{ lineHeight: '1.4' }}>
-        <p>Name: Dr.T Pavan Kumar</p>
-        <p>Cabin: C603</p>
-        <p style={{ marginTop: '8px' }}>Signature:</p>
-        <div style={{ 
-          width: '120px', 
-          height: '40px',
-          marginTop: '5px',
-          position: 'relative'
-        }}>
-          <Image 
-            src="/Signature.jpg"
-            alt="HOD Signature"
-            layout="fill"
-            objectFit="contain"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+          
         </div>
       </div>
 
@@ -737,29 +816,46 @@ India`
 
                 {/* Print Button and HOD Signature Section */}
                 <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                  <Button
-                    variant="outline"
-                    className="flex items-center space-x-2 border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
-                    onClick={() => {
-                      window.print();
-                    }}
-                  >
-                    <Printer className="w-4 h-4" />
-                    <span>Print Report</span>
-                  </Button>
+  <div className="flex items-center space-x-4">
+    <Button
+      variant="outline"
+      className="flex items-center space-x-2 border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
+      onClick={() => {
+        window.print();
+      }}
+    >
+      <Printer className="w-4 h-4" />
+      <span>Print Report</span>
+    </Button>
 
-                  <div className="text-right">
-                    <Label className="text-sm font-medium text-gray-700 mb-2 block">HOD Signature</Label>
-                    <div className="w-40 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 relative overflow-hidden">
-                      <Image 
-                        src="/Signature.jpg"
-                        alt="HOD Signature"
-                        layout="fill"
-                        objectFit="contain"
-                      />
-                    </div>
-                  </div>
-                </div>
+    <Button
+      variant="outline"
+      className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 bg-transparent"
+      onClick={() => setIsWhatsAppModalOpen(true)}
+    >
+      <svg 
+        className="w-4 h-4"
+        fill="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      <span>Send Report</span>
+    </Button>
+  </div>
+
+  <div className="text-right">
+    <Label className="text-sm font-medium text-gray-700 mb-2 block">HOD Signature</Label>
+    <div className="w-40 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 relative overflow-hidden">
+      <Image 
+        src="/Signature.jpg"
+        alt="HOD Signature"
+        layout="fill"
+        objectFit="contain"
+      />
+    </div>
+  </div>
+</div>
               </div>
             </CardContent>
           </Card>
