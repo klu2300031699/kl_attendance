@@ -65,6 +65,19 @@ const getVisibleSemesters = (id: string): number => {
   }
 }
 
+type CourseResult = {
+  name: string;
+  courseCode: string; // Add this
+  grade: string;
+  status: string;
+};
+
+type SemesterResult = {
+  semester: string;
+  courses: CourseResult[];
+  cgpa: string;
+};
+
 export default function StudentPortal() {
   const [universityId, setUniversityId] = useState("")
   const [displayedId, setDisplayedId] = useState("")
@@ -89,6 +102,7 @@ export default function StudentPortal() {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [sendingReport, setSendingReport] = useState(false);
+  const [semesterResults, setSemesterResults] = useState<SemesterResult[]>([]);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
@@ -132,6 +146,12 @@ export default function StudentPortal() {
         setDisplayedId(universityId)
         setIsSubmitted(true)
 
+        const resultsResponse = await fetch(`/api/results?studentId=${universityId}`);
+        if (!resultsResponse.ok) { 
+          throw new Error(`Failed to fetch results data`);
+        }
+        setSemesterResults(await resultsResponse.json());
+
       } catch (error) {
         console.error("Error fetching data:", error)
         setError('Failed to fetch data. Please try again.')
@@ -167,80 +187,80 @@ export default function StudentPortal() {
     }
   };
 
-  const semesterResults = [
-    {
-      semester: "Semester 1",
-      courses: [
-        { name: "Programming in C", grade: "A", status: "P" },
-        { name: "Digital Logic Design", grade: "A+", status: "P" },
-        { name: "Mathematics - I", grade: "B+", status: "P" },
-        { name: "Physics", grade: "A", status: "P" },
-        { name: "English Communication", grade: "A+", status: "P" },
-        { name: "Environmental Science", grade: "A", status: "P" },
-      ],
-      cgpa: "8.5",
-    },
-    {
-      semester: "Semester 2",
-      courses: [
-        { name: "Data Structures", grade: "A+", status: "P" },
-        { name: "Computer Organization", grade: "A", status: "P" },
-        { name: "Mathematics - II", grade: "A", status: "P" },
-        { name: "Web Technologies", grade: "A+", status: "P" },
-        { name: "Professional Ethics", grade: "A", status: "P" },
-        { name: "Object Oriented Programming", grade: "B+", status: "P" },
-      ],
-      cgpa: "8.8",
-    },
-    {
-      semester: "Semester 3",
-      courses: [
-        { name: "Database Management", grade: "A+", status: "P" },
-        { name: "Operating Systems", grade: "A+", status: "P" },
-        { name: "Computer Networks", grade: "F", status: "F" },
-        { name: "Software Engineering", grade: "A+", status: "P" },
-        { name: "Discrete Mathematics", grade: "A", status: "P" },
-        { name: "Python Programming", grade: "A", status: "P" },
-      ],
-      cgpa: "9.1",
-    },
-    {
-      semester: "Semester 4",
-      courses: [
-        { name: "Artificial Intelligence", grade: "A", status: "P" },
-        { name: "Machine Learning", grade: "A+", status: "P" },
-        { name: "Cloud Computing", grade: "A", status: "P" },
-        { name: "Cyber Security", grade: "B+", status: "P" },
-        { name: "Big Data Analytics", grade: "A+", status: "P" },
-        { name: "Mobile App Development", grade: "A", status: "P" },
-      ],
-      cgpa: "8.9",
-    },
-    {
-      semester: "Semester 5",
-      courses: [
-        { name: "Deep Learning", grade: "A+", status: "P" },
-        { name: "Internet of Things", grade: "A+", status: "P" },
-        { name: "Blockchain Technology", grade: "A", status: "P" },
-        { name: "Natural Language Processing", grade: "A+", status: "P" },
-        { name: "DevOps Engineering", grade: "A", status: "P" },
-        { name: "Cloud Security", grade: "A", status: "P" },
-      ],
-      cgpa: "9.2",
-    },
-    {
-      semester: "Semester 6",
-      courses: [
-        { name: "Database Management", grade: "A+", status: "P" },
-        { name: "Operating Systems", grade: "A+", status: "P" },
-        { name: "Computer Networks", grade: "F", status: "F" },
-        { name: "Software Engineering", grade: "A+", status: "P" },
-        { name: "Discrete Mathematics", grade: "A", status: "P" },
-        { name: "Python Programming", grade: "A", status: "P" },
-      ],
-      cgpa: "9.1",
-    },
-  ]
+  // const semesterResults = [
+  //   {
+  //     semester: "Semester 1",
+  //     courses: [
+  //       { name: "Programming in C", grade: "A", status: "P" },
+  //       { name: "Digital Logic Design", grade: "A+", status: "P" },
+  //       { name: "Mathematics - I", grade: "B+", status: "P" },
+  //       { name: "Physics", grade: "A", status: "P" },
+  //       { name: "English Communication", grade: "A+", status: "P" },
+  //       { name: "Environmental Science", grade: "A", status: "P" },
+  //     ],
+  //     cgpa: "8.5",
+  //   },
+  //   {
+  //     semester: "Semester 2",
+  //     courses: [
+  //       { name: "Data Structures", grade: "A+", status: "P" },
+  //       { name: "Computer Organization", grade: "A", status: "P" },
+  //       { name: "Mathematics - II", grade: "A", status: "P" },
+  //       { name: "Web Technologies", grade: "A+", status: "P" },
+  //       { name: "Professional Ethics", grade: "A", status: "P" },
+  //       { name: "Object Oriented Programming", grade: "B+", status: "P" },
+  //     ],
+  //     cgpa: "8.8",
+  //   },
+  //   {
+  //     semester: "Semester 3",
+  //     courses: [
+  //       { name: "Database Management", grade: "A+", status: "P" },
+  //       { name: "Operating Systems", grade: "A+", status: "P" },
+  //       { name: "Computer Networks", grade: "F", status: "F" },
+  //       { name: "Software Engineering", grade: "A+", status: "P" },
+  //       { name: "Discrete Mathematics", grade: "A", status: "P" },
+  //       { name: "Python Programming", grade: "A", status: "P" },
+  //     ],
+  //     cgpa: "9.1",
+  //   },
+  //   {
+  //     semester: "Semester 4",
+  //     courses: [
+  //       { name: "Artificial Intelligence", grade: "A", status: "P" },
+  //       { name: "Machine Learning", grade: "A+", status: "P" },
+  //       { name: "Cloud Computing", grade: "A", status: "P" },
+  //       { name: "Cyber Security", grade: "B+", status: "P" },
+  //       { name: "Big Data Analytics", grade: "A+", status: "P" },
+  //       { name: "Mobile App Development", grade: "A", status: "P" },
+  //     ],
+  //     cgpa: "8.9",
+  //   },
+  //   {
+  //     semester: "Semester 5",
+  //     courses: [
+  //       { name: "Deep Learning", grade: "A+", status: "P" },
+  //       { name: "Internet of Things", grade: "A+", status: "P" },
+  //       { name: "Blockchain Technology", grade: "A", status: "P" },
+  //       { name: "Natural Language Processing", grade: "A+", status: "P" },
+  //       { name: "DevOps Engineering", grade: "A", status: "P" },
+  //       { name: "Cloud Security", grade: "A", status: "P" },
+  //     ],
+  //     cgpa: "9.2",
+  //   },
+  //   {
+  //     semester: "Semester 6",
+  //     courses: [
+  //       { name: "Database Management", grade: "A+", status: "P" },
+  //       { name: "Operating Systems", grade: "A+", status: "P" },
+  //       { name: "Computer Networks", grade: "F", status: "F" },
+  //       { name: "Software Engineering", grade: "A+", status: "P" },
+  //       { name: "Discrete Mathematics", grade: "A", status: "P" },
+  //       { name: "Python Programming", grade: "A", status: "P" },
+  //     ],
+  //     cgpa: "9.1",
+  //   },
+  // ]
 
   const address = `House No. 123, Sector 15
 Rajiv Gandhi Nagar, Vijayawada
@@ -435,8 +455,8 @@ const WhatsAppModal = () => {
 
           <div style={{ 
   marginBottom: '15px',
-  paddingTop: '15px',    // Added padding
-  borderTop: '1px solid #000'  // Added border
+  paddingTop: '15px',    
+  borderTop: '1px solid #000'  
 }}>
   <h2 style={{ 
     fontSize: '11pt', 
@@ -449,42 +469,42 @@ const WhatsAppModal = () => {
       .slice(0, visibleSemesters)
       .map((semester, semIndex) => (
         <div key={semIndex} style={{ 
-          border: '2px solid #000',  // Changed from 1px to 2px and #eee to #000
-          padding: '8px',            // Increased padding
-          borderRadius: '4px'        // Added slight border radius
+          border: '2px solid #000',
+          padding: '8px',
+          borderRadius: '4px'
         }}>
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
             marginBottom: '4px', 
-            borderBottom: '1.5px solid #000',  // Made bottom border thicker
+            borderBottom: '1.5px solid #000',
             paddingBottom: '4px' 
           }}>
             <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
             <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
           </div>
           <div style={{ 
-            display: 'grid', 
+            display: 'grid',  
             gridTemplateColumns: 'repeat(3, 1fr)', 
             gap: '4px', 
-            fontSize: '7.5pt' 
+            fontSize: '8pt' 
           }}>
             {semester.courses.map((course, courseIndex) => (
               <div key={courseIndex} style={{ 
-                border: '1px solid #666',  // Changed from #eee to #666
+                border: '1px solid #666',
                 padding: '3px', 
                 textAlign: 'center',
                 backgroundColor: '#fff'
               }}>
                 <div style={{ 
-                  fontSize: '7pt', 
+                  fontSize: '7.5pt', 
                   whiteSpace: 'nowrap', 
                   overflow: 'hidden', 
                   textOverflow: 'ellipsis', 
                   marginBottom: '1px' 
                 }}>
-                  {course.name}
+                  {course.courseCode} {/* Changed from course.name to course.courseCode */}
                 </div>
                 <div style={{ 
                   fontWeight: 'bold',
@@ -601,13 +621,18 @@ const WhatsAppModal = () => {
                     placeholder="Enter University ID (e.g., 2025001234)"
                     value={universityId}
                     onChange={(e) => setUniversityId(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSubmit();
+                      }
+                    }}
                     className="h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
                   />
                   {error && (
-        <p className="mt-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
+                      <p className="mt-2 text-sm text-red-600">
+                       {error}
+                        </p>
+                  )}
                 </div>
                 <Button 
                   onClick={handleSubmit}
@@ -697,13 +722,16 @@ const WhatsAppModal = () => {
                     <div key={semIndex} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
                         <h3 className="font-semibold text-gray-800">{semester.semester}</h3>
-                        <Badge className={`${getCGPAColor(semester.cgpa)} font-semibold`}>CGPA: {semester.cgpa}</Badge>
+                        {/* <Badge className={`${getCGPAColor(semester.cgpa)} font-semibold`}>CGPA: {semester.cgpa}</Badge> */}
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {semester.courses.map((course, courseIndex) => (
                           <div key={courseIndex} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-700 mb-1 truncate" title={course.name}>{course.name}</p>
+                              <p className="text-xs text-gray-500 mb-1">{course.courseCode}</p>
+                              <p className="text-sm font-medium text-gray-700 mb-1 truncate" title={course.name}>
+                                {course.name}
+                              </p>
                               <p className="text-lg font-semibold text-gray-900 mb-2">{course.grade}</p>
                               <Badge
                                 className={`text-xs font-bold ${
