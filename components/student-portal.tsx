@@ -50,19 +50,10 @@ const getSemesterFromId = (id: string): number => {
   }
 }
 
-// Add this function to determine how many semesters to show based on ID
+// Modify the getVisibleSemesters function in student-portal.tsx
 const getVisibleSemesters = (id: string): number => {
-  const prefix = id.substring(0, 2);
-  switch (prefix) {
-    case '24':
-      return 2;  // Show 2 semesters for 24 batch
-    case '23':
-      return 4;  // Show 4 semesters for 23 batch
-    case '22':
-      return 6;  // Show 6 semesters for 22 batch
-    default:
-      return 0;
-  }
+  // Instead of restricting by batch, show all available semesters for the student
+  return 8; // Allow up to 8 semesters (including summer terms)
 }
 
 type CourseResult = {
@@ -77,6 +68,22 @@ type SemesterResult = {
   courses: CourseResult[];
   cgpa: string;
 };
+
+// Add this helper function before the StudentPortal component
+const sortSemesters = (results: SemesterResult[]): SemesterResult[] => {
+  return results.sort((a, b) => {
+    const aIsSummer = a.semester.toLowerCase().includes('summer');
+    const bIsSummer = b.semester.toLowerCase().includes('summer');
+    
+    if (aIsSummer && !bIsSummer) return 1;  // Summer terms go last
+    if (!aIsSummer && bIsSummer) return -1;
+    
+    // For non-summer terms, sort by semester number
+    const aNum = parseInt(a.semester.split(' ')[1]);
+    const bNum = parseInt(b.semester.split(' ')[1]);
+    return aNum - bNum;
+  });
+}
 
 export default function StudentPortal() {
   const [universityId, setUniversityId] = useState("")
@@ -150,7 +157,8 @@ export default function StudentPortal() {
         if (!resultsResponse.ok) { 
           throw new Error(`Failed to fetch results data`);
         }
-        setSemesterResults(await resultsResponse.json());
+        const results = await resultsResponse.json();
+        setSemesterResults(sortSemesters(results));
 
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -810,7 +818,7 @@ const WhatsAppModal = () => {
                 <div className="border-t pt-6">
                   <CardTitle className="flex items-center space-x-3 text-gray-800 mb-4">
                     <GraduationCap className="w-5 h-5 text-red-700" />
-                    <span>Counseller Details</span>
+                    <span>Counsellar Details</span>
                   </CardTitle>
                   <div className="flex items-center space-x-6">
                     <div>
