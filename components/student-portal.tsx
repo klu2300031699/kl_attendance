@@ -490,7 +490,6 @@ const WhatsAppModal = () => {
             paddingBottom: '4px' 
           }}>
             <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
-            <span style={{ fontSize: '8pt' }}>CGPA: {semester.cgpa}</span>
           </div>
           <div style={{ 
             display: 'grid',  
@@ -537,7 +536,7 @@ const WhatsAppModal = () => {
               borderBottom: '1px solid #000',
               paddingBottom: '5px'
             }}>
-             Counseller Details
+             Counsellor Details
             </h2>
             
             {/* Update the Student & Counseller Details section */}
@@ -818,7 +817,7 @@ const WhatsAppModal = () => {
                 <div className="border-t pt-6">
                   <CardTitle className="flex items-center space-x-3 text-gray-800 mb-4">
                     <GraduationCap className="w-5 h-5 text-red-700" />
-                    <span>Counsellar Details</span>
+                    <span>Counsellor Details</span>
                   </CardTitle>
                   <div className="flex items-center space-x-6">
                     <div>
