@@ -399,11 +399,16 @@ const WhatsAppModal = () => {
     {/* CSE-4 HOD Details on left */}
     <div style={{ 
       width: '250px',
-      fontSize: '8pt'
+      fontSize: '8pt',
+      border: '1px solid #000',
+      padding: '8px',
+      borderRadius: '4px'
     }}>
       <p style={{ 
         fontWeight: 'bold', 
-        marginBottom: '4px' 
+        marginBottom: '4px',
+        borderBottom: '1px solid #000',
+        paddingBottom: '4px'
       }}>From:</p>
       <div style={{ lineHeight: '1.4' }}>
         <p>Name: Dr.T Pavan Kumar</p>
@@ -412,29 +417,32 @@ const WhatsAppModal = () => {
     </div>
 
     {/* Empty space in middle */}
-    <div style={{ flex: 1 }}></div>
+    <div style={{ flex: 1, minWidth: '40px' }}></div>
 
     {/* Student Address on right */}
     <div style={{ 
-  width: '250px',
-  textAlign: 'right',
-  fontSize: '8pt'
-}}>
-  <p style={{ 
-    fontWeight: 'bold', 
-    marginBottom: '4px',
-    fontSize: '9pt'
-  }}>To Address:</p>
-  <div style={{ 
-    whiteSpace: 'pre-wrap', // Changed from pre-line to pre-wrap
-    lineHeight: '1.5',
-    fontWeight: '600',
-    fontSize: '8.5pt',
-    wordBreak: 'break-word' // Added to handle long addresses
-  }}>
-    {studentDetails?.address || 'Address not available'}
-  </div>
-</div>
+      width: '250px',
+      fontSize: '8pt',
+      border: '1px solid #000',
+      padding: '8px',
+      borderRadius: '4px'
+    }}>
+      <p style={{ 
+        fontWeight: 'bold', 
+        marginBottom: '4px',
+        borderBottom: '1px solid #000',
+        paddingBottom: '4px'
+      }}>To Address:</p>
+      <div style={{ 
+        whiteSpace: 'pre-wrap',
+        lineHeight: '1.5',
+        fontWeight: '500',
+        fontSize: '8.5pt',
+        wordBreak: 'break-word'
+      }}>
+        {studentDetails?.address || 'Address not available'}
+      </div>
+    </div>
   </div>
 </div>
 
