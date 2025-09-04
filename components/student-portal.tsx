@@ -755,26 +755,21 @@ const WhatsAppModal = () => {
                     <div key={semIndex} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
                         <h3 className="font-semibold text-gray-800">{semester.semester}</h3>
-                        {/* <Badge className={`${getCGPAColor(semester.cgpa)} font-semibold`}>CGPA: {semester.cgpa}</Badge> */}
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         {semester.courses.map((course, courseIndex) => (
                           <div key={courseIndex} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
                             <div className="text-center">
-                              <p className="text-xs text-gray-500 mb-1">{course.courseCode}</p>
-                              <p className="text-sm font-medium text-gray-700 mb-1 truncate" title={course.name}>
-                                {course.name}
-                              </p>
-                              <p className="text-lg font-semibold text-gray-900 mb-2">{course.grade}</p>
-                              <Badge
+                              {/* Display course code */}
+                              <p className="text-sm font-medium text-gray-700 mb-1">{course.courseCode}</p>
+                              {/* Display grade and status with colors */}
+                              <p
                                 className={`text-xs font-bold ${
-                                  course.status === "P"
-                                    ? "bg-green-100 text-green-800 border-green-200"
-                                    : "bg-red-100 text-red-800 border-red-200"
+                                  course.status === "P" ? "text-green-600" : "text-red-600"
                                 }`}
                               >
-                                [{course.status}]
-                              </Badge>
+                                {course.grade} [{course.status}]
+                              </p>
                             </div>
                           </div>
                         ))}
