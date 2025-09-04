@@ -112,15 +112,17 @@ export default function StudentPortal() {
   const [semesterResults, setSemesterResults] = useState<SemesterResult[]>([]);
   // Add this state at the top with other states
   const [overallCGPA, setOverallCGPA] = useState<string>("N/A");
+  // Add this state at the top with other states
+  const [backlogs, setBacklogs] = useState<number>(0);
 
   const handleSubmit = async () => {
     if (universityId.trim().length > 0) {
       try {
         setError(null);
-        setCurrentSemester(getSemesterFromId(universityId))
-        setVisibleSemesters(getVisibleSemesters(universityId))
+        setCurrentSemester(getSemesterFromId(universityId));
+        setVisibleSemesters(getVisibleSemesters(universityId));
 
-        // Fetch CGPA first
+        // Fetch CGPA
         const cgpaResponse = await fetch(`/api/cgpa?studentId=${universityId}`);
         if (cgpaResponse.ok) {
           const cgpaData = await cgpaResponse.json();
@@ -129,53 +131,61 @@ export default function StudentPortal() {
           setOverallCGPA("N/A");
         }
 
-        const response = await fetch(`/api/student?studentId=${universityId}`)
+        const response = await fetch(`/api/student?studentId=${universityId}`);
         if (!response.ok) {
           if (response.status === 404) {
-            setError(`ID ${universityId} not found in records`)
-            setIsSubmitted(false)
-            setAttendanceData([])
-            setDisplayedId("")
-            setStudentDetails(null)
-            return
+            setError(`ID ${universityId} not found in records`);
+            setIsSubmitted(false);
+            setAttendanceData([]);
+            setDisplayedId("");
+            setStudentDetails(null);
+            return;
           }
-          throw new Error(`Failed to fetch data. Please try again.`)
+          throw new Error(`Failed to fetch data. Please try again.`);
         }
 
-        const studentData = await response.json()
-        setStudentDetails(studentData)
-        setStudentName(studentData.name)
-        setDisplayedId(studentData.id)
+        const studentData = await response.json();
+        setStudentDetails(studentData);
+        setStudentName(studentData.name);
+        setDisplayedId(studentData.id);
 
         // Fetch attendance data
-        const attendanceResponse = await fetch(`/api/attendance?studentId=${universityId}`)
+        const attendanceResponse = await fetch(`/api/attendance?studentId=${universityId}`);
         if (!attendanceResponse.ok) {
-          throw new Error(`Failed to fetch attendance data`)
+          throw new Error(`Failed to fetch attendance data`);
         }
-        const attendanceData = await attendanceResponse.json()
-        
+        const attendanceData = await attendanceResponse.json();
+
         if (attendanceData.length === 0) {
-          setError('No attendance records found for this ID')
-          setIsSubmitted(false)
-          return
+          setError("No attendance records found for this ID");
+          setIsSubmitted(false);
+          return;
         }
-        
+
         setAttendanceData(attendanceData)
         setDisplayedId(universityId)
         setIsSubmitted(true)
 
+        // Fetch semester results and calculate backlogs
         const resultsResponse = await fetch(`/api/results?studentId=${universityId}`);
-        if (!resultsResponse.ok) { 
+        if (!resultsResponse.ok) {
           throw new Error(`Failed to fetch results data`);
         }
         const results = await resultsResponse.json();
         setSemesterResults(sortSemesters(results));
 
+        // Calculate the number of backlogs
+        const failedCoursesCount = results.reduce((count: number, semester: any) => {
+          const failedCourses = semester.courses.filter((course: any) => course.status !== "P");
+          return count + failedCourses.length;
+        }, 0);
+        setBacklogs(failedCoursesCount);
       } catch (error) {
         console.error("Error fetching data:", error)
-        setError('Failed to fetch data. Please try again.')
+        setError("Failed to fetch data. Please try again.")
         setIsSubmitted(false)
         setOverallCGPA("N/A");
+        setBacklogs(0);
       }
     }
   }
@@ -480,72 +490,29 @@ const WhatsAppModal = () => {
             </table>
           </div>
 
-          <div style={{ 
-  marginBottom: '15px',
-  paddingTop: '15px',    
-  borderTop: '1px solid #000'  
-}}>
-  <h2 style={{ 
-    fontSize: '11pt', 
-    fontWeight: 'bold', 
-    marginBottom: '3px' 
-  }}>Academic Performance</h2>
-  <p style={{ marginBottom: '8px', fontSize: '9pt' }}>
-  Overall CGPA: {overallCGPA}
-</p>
+          <div style={{ marginBottom: '15px', paddingTop: '15px', borderTop: '1px solid #000' }}>
+  <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '3px' }}>Academic Performance</h2>
+  <p style={{ marginBottom: '8px', fontSize: '9pt' }}>  <pre>Overall CGPA: {overallCGPA}           Backlogs: {backlogs}</pre></p>
   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-    {semesterResults
-      .slice(0, visibleSemesters)
-      .map((semester, semIndex) => (
-        <div key={semIndex} style={{ 
-          border: '2px solid #000',
-          padding: '8px',
-          borderRadius: '4px'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '4px', 
-            borderBottom: '1.5px solid #000',
-            paddingBottom: '4px' 
-          }}>
-            <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
-          </div>
-          <div style={{ 
-            display: 'grid',  
-            gridTemplateColumns: 'repeat(3, 1fr)', 
-            gap: '4px', 
-            fontSize: '8pt' 
-          }}>
-            {semester.courses.map((course, courseIndex) => (
-              <div key={courseIndex} style={{ 
-                border: '1px solid #666',
-                padding: '3px', 
-                textAlign: 'center',
-                backgroundColor: '#fff'
-              }}>
-                <div style={{ 
-                  fontSize: '7.5pt', 
-                  whiteSpace: 'nowrap', 
-                  overflow: 'hidden', 
-                  textOverflow: 'ellipsis', 
-                  marginBottom: '1px' 
-                }}>
-                  {course.courseCode} {/* Changed from course.name to course.courseCode */}
-                </div>
-                <div style={{ 
-                  fontWeight: 'bold',
-                  color: course.status === 'F' ? '#dc2626' : '#166534',
-                  fontSize: '7.5pt'
-                }}>
-                  {course.grade} [{course.status}]
-                </div>
-              </div>
-            ))}
-          </div>
+    {semesterResults.slice(0, visibleSemesters).map((semester, semIndex) => (
+      <div key={semIndex} style={{ border: '2px solid #000', padding: '8px', borderRadius: '4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', borderBottom: '1.5px solid #000', paddingBottom: '4px' }}>
+          <span style={{ fontSize: '8pt', fontWeight: 'bold' }}>{semester.semester}</span>
         </div>
-      ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', fontSize: '8pt' }}>
+          {semester.courses.map((course, courseIndex) => (
+            <div key={courseIndex} style={{ border: '1px solid #666', padding: '3px', textAlign: 'center', backgroundColor: '#fff' }}>
+              <div style={{ fontSize: '7.5pt', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '1px' }}>
+                {course.courseCode}
+              </div>
+              <div style={{ fontWeight: 'bold', color: course.status === 'F' ? '#dc2626' : '#166534', fontSize: '7.5pt' }}>
+                {course.grade} [{course.status}]
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
   </div>
 </div>
 
@@ -736,10 +703,15 @@ const WhatsAppModal = () => {
                     <Award className="w-5 h-5 text-red-700" />
                     <span>Academic Performance</span>
                   </CardTitle>
-                  <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg border border-green-200">
-                    <span className="text-sm font-semibold">
-                      Overall CGPA: {overallCGPA}
-                    </span>
+                  <div>
+                    <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg border border-green-200">
+                      <span className="text-sm font-semibold">Overall CGPA: {overallCGPA}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="bg-red-100 text-red-800 px-4 py-2 rounded-lg border border-red-200 mt-2">
+                      <span className="text-sm font-semibold">Backlogs: {backlogs}</span>
+                    </div>
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mt-2">CGPA Scale: 10.0 | [P] = Pass, [F] = Fail</p>
