@@ -492,7 +492,7 @@ const WhatsAppModal = () => {
 
           <div style={{ marginBottom: '15px', paddingTop: '15px', borderTop: '1px solid #000' }}>
   <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '3px' }}>Academic Performance</h2>
-  <p style={{ marginBottom: '8px', fontSize: '9pt' }}>  <pre>Overall CGPA: {overallCGPA}           Backlogs: {backlogs}</pre></p>
+  <div style={{ marginBottom: '8px', fontSize: '9pt' }}>  <pre>Overall CGPA: {overallCGPA}           Backlogs: {backlogs}</pre></div>
   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
     {semesterResults.slice(0, visibleSemesters).map((semester, semIndex) => (
       <div key={semIndex} style={{ border: '2px solid #000', padding: '8px', borderRadius: '4px' }}>
@@ -552,7 +552,38 @@ const WhatsAppModal = () => {
 </div>
           </div>
 
-          
+          {/* Add this section at the end of the print-only view */}
+<div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #000' }}>
+  <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '10px' }}>Message</h2>
+  <div style={{ fontSize: '9pt', lineHeight: '1.5', marginBottom: '10px' }}>
+    <p><strong>Subject:</strong> Attendance and Academic Performance Update</p>
+    <p>Dear Parents,</p>
+    <p>
+      We are sharing the current semester attendance (as of 31-08-2025) and the semester-wise academic performance 
+      (CGPA and backlog details) of your ward.
+    </p>
+    <p>
+      As per University norms, 85% attendance is mandatory. Attendance between 75%–84% requires valid proof for condonation. 
+      If your ward has less than 85% attendance, kindly meet the Head of the Department along with your ward immediately.
+    </p>
+  </div>
+  <div style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+    <p><strong>Subject:</strong> హాజరు మరియు Academic Performance సమాచారం</p>
+    <p>గౌరవనీయులైన తల్లిదండ్రులకు,</p>
+    <p>
+      మీ కుమారుడు/కుమార్తె యొక్క ప్రస్తుతం కొనసాగుతున్న సెమిస్టర్ హాజరు (తేదీ 31-08-2025 వరకు ) మరియు సెమిస్టర్ వారీగా Academic Performance 
+      (CGPA మరియు బ్యాక్‌లాగ్ వివరాలు) ను మీతో పంచుకుంటున్నాము.
+    </p>
+    <p>
+      విశ్వవిద్యాలయ నిబంధనల ప్రకారం:
+      <br />• 85% హాజరు తప్పనిసరి.
+      <br />• 75%–84% మధ్య హాజరు ఉన్నవారు, అనారోగ్యం లేదా అత్యవసర కారణాలకు సంబంధించిన సరైన రుజువులు సమర్పించాలి.
+    </p>
+    <p>
+      అందువల్ల, మీ కుమారుడు/కుమార్తె 85% కంటే తక్కువ హాజరు కలిగి ఉంటే, దయచేసి మీ కుమారుడు/కుమార్తెతో కలిసి విభాగాధిపతిని వెంటనే కలవండి.
+    </p>
+  </div>
+</div>
         </div>
       </div>
 
