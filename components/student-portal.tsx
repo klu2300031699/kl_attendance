@@ -423,15 +423,16 @@ const WhatsAppModal = () => {
   <p style={{ 
     fontWeight: 'bold', 
     marginBottom: '4px',
-    fontSize: '9pt'  // Increased font size
+    fontSize: '9pt'
   }}>To Address:</p>
   <div style={{ 
-    whiteSpace: 'pre-line',
+    whiteSpace: 'pre-wrap', // Changed from pre-line to pre-wrap
     lineHeight: '1.5',
-    fontWeight: '600',  // Added semi-bold weight
-    fontSize: '8.5pt'   // Slightly increased font size
+    fontWeight: '600',
+    fontSize: '8.5pt',
+    wordBreak: 'break-word' // Added to handle long addresses
   }}>
-    {studentDetails?.address}
+    {studentDetails?.address || 'Address not available'}
   </div>
 </div>
   </div>
