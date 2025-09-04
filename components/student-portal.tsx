@@ -190,112 +190,32 @@ export default function StudentPortal() {
     }
   }
 
-  const handleSendReport = async () => {
-    if (!whatsappNumber) return;
-    
-    setSendingReport(true);
-    try {
-      const formattedNumber = whatsappNumber.replace(/\D/g, '');
-      // Create the WhatsApp message with student details
-      const message = `*Student Academic Report*%0a%0a` +
-        `*Student Name:* ${studentDetails?.name}%0a` +
-        `*ID:* ${studentDetails?.id}%0a` +
-        `*Semester:* ${currentSemester}%0a` ;
-      
-      // Open WhatsApp in new window
-      window.open(
-        `https://wa.me/${formattedNumber}?text=${message}`,
-        '_blank'
-      );
-      
-      setWhatsappNumber("");
-      setIsWhatsAppModalOpen(false);
-    } catch (error) {
-      console.error("Error sending report:", error);
-    } finally {
-      setSendingReport(false);
+  const handleSendReport = () => {
+    const formattedNumber = whatsappNumber.replace(/\D/g, ''); // Remove non-numeric characters
+
+    if (!formattedNumber || formattedNumber.length < 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
     }
+
+    // Create the WhatsApp message with student details
+    const message = `*Student Academic Report*%0a%0a` +
+      `*Student Name:* ${studentDetails?.name || "N/A"}%0a` +
+      `*ID:* ${studentDetails?.id || "N/A"}%0a` +
+      `*Semester:* ${currentSemester || "N/A"}%0a` +
+      `*Overall CGPA:* ${overallCGPA || "N/A"}%0a` +
+      `*Backlogs:* ${backlogs || "N/A"}%0a%0a` +
+      `For more details, please contact the department.`;
+
+    // Open WhatsApp chat in a new window
+    window.open(
+      `https://wa.me/${formattedNumber}?text=${message}`,
+      '_blank'
+    );
+
+    setWhatsappNumber(""); // Clear the input field
   };
 
-  // const semesterResults = [
-  //   {
-  //     semester: "Semester 1",
-  //     courses: [
-  //       { name: "Programming in C", grade: "A", status: "P" },
-  //       { name: "Digital Logic Design", grade: "A+", status: "P" },
-  //       { name: "Mathematics - I", grade: "B+", status: "P" },
-  //       { name: "Physics", grade: "A", status: "P" },
-  //       { name: "English Communication", grade: "A+", status: "P" },
-  //       { name: "Environmental Science", grade: "A", status: "P" },
-  //     ],
-  //     cgpa: "8.5",
-  //   },
-  //   {
-  //     semester: "Semester 2",
-  //     courses: [
-  //       { name: "Data Structures", grade: "A+", status: "P" },
-  //       { name: "Computer Organization", grade: "A", status: "P" },
-  //       { name: "Mathematics - II", grade: "A", status: "P" },
-  //       { name: "Web Technologies", grade: "A+", status: "P" },
-  //       { name: "Professional Ethics", grade: "A", status: "P" },
-  //       { name: "Object Oriented Programming", grade: "B+", status: "P" },
-  //     ],
-  //     cgpa: "8.8",
-  //   },
-  //   {
-  //     semester: "Semester 3",
-  //     courses: [
-  //       { name: "Database Management", grade: "A+", status: "P" },
-  //       { name: "Operating Systems", grade: "A+", status: "P" },
-  //       { name: "Computer Networks", grade: "F", status: "F" },
-  //       { name: "Software Engineering", grade: "A+", status: "P" },
-  //       { name: "Discrete Mathematics", grade: "A", status: "P" },
-  //       { name: "Python Programming", grade: "A", status: "P" },
-  //     ],
-  //     cgpa: "9.1",
-  //   },
-  //   {
-  //     semester: "Semester 4",
-  //     courses: [
-  //       { name: "Artificial Intelligence", grade: "A", status: "P" },
-  //       { name: "Machine Learning", grade: "A+", status: "P" },
-  //       { name: "Cloud Computing", grade: "A", status: "P" },
-  //       { name: "Cyber Security", grade: "B+", status: "P" },
-  //       { name: "Big Data Analytics", grade: "A+", status: "P" },
-  //       { name: "Mobile App Development", grade: "A", status: "P" },
-  //     ],
-  //     cgpa: "8.9",
-  //   },
-  //   {
-  //     semester: "Semester 5",
-  //     courses: [
-  //       { name: "Deep Learning", grade: "A+", status: "P" },
-  //       { name: "Internet of Things", grade: "A+", status: "P" },
-  //       { name: "Blockchain Technology", grade: "A", status: "P" },
-  //       { name: "Natural Language Processing", grade: "A+", status: "P" },
-  //       { name: "DevOps Engineering", grade: "A", status: "P" },
-  //       { name: "Cloud Security", grade: "A", status: "P" },
-  //     ],
-  //     cgpa: "9.2",
-  //   },
-  //   {
-  //     semester: "Semester 6",
-  //     courses: [
-  //       { name: "Database Management", grade: "A+", status: "P" },
-  //       { name: "Operating Systems", grade: "A+", status: "P" },
-  //       { name: "Computer Networks", grade: "F", status: "F" },
-  //       { name: "Software Engineering", grade: "A+", status: "P" },
-  //       { name: "Discrete Mathematics", grade: "A", status: "P" },
-  //       { name: "Python Programming", grade: "A", status: "P" },
-  //     ],
-  //     cgpa: "9.1",
-  //   },
-  // ]
-
-  const address = `House No. 123, Sector 15
-Rajiv Gandhi Nagar, Vijayawada
-Andhra Pradesh - 520010
-India`
 
  const getAttendanceColor = (percentage: number) => {
   if (percentage >= 85) return "bg-green-100 text-green-800 border-green-200"
@@ -312,51 +232,41 @@ India`
   }
 
 // Add this component before the return statement
-const WhatsAppModal = () => {
-  if (!isWhatsAppModalOpen) return null;
-
-  return (
-    <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-96">
-          <h3 className="text-lg font-semibold mb-4">Send Report via WhatsApp</h3>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="whatsapp-number" className="text-sm font-medium text-gray-700">
-                WhatsApp Number
-              </Label>
-              <Input
-                id="whatsapp-number"
-                placeholder="Enter WhatsApp number with country code (e.g., 91XXXXXXXXXX)"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsWhatsAppModalOpen(false);
-                  setWhatsappNumber("");
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSendReport}
-                disabled={!whatsappNumber || sendingReport}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                {sendingReport ? "Sending..." : "Send"}
-              </Button>
-            </div>
-          </div>
+const WhatsAppModal = () => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 w-96">
+      <h3 className="text-lg font-semibold mb-4">Send Report via WhatsApp</h3>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="whatsapp-number" className="text-sm font-medium text-gray-700">
+            Mobile Number
+          </Label>
+          <Input
+            id="whatsapp-number"
+            placeholder="Enter mobile number (e.g., 91XXXXXXXXXX)"
+            value={whatsappNumber}
+            onChange={(e) => setWhatsappNumber(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <div className="flex justify-end space-x-3">
+          <Button
+            variant="outline"
+            onClick={() => setIsWhatsAppModalOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSendReport}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            Send
+          </Button>
         </div>
       </div>
-    </>
-  );
-};
+    </div>
+  </div>
+);
 
   return (
     <>
@@ -873,7 +783,7 @@ const WhatsAppModal = () => {
     <Button
       variant="outline"
       className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 bg-transparent"
-      onClick={() => setIsWhatsAppModalOpen(true)}
+      onClick={() => setIsWhatsAppModalOpen(true)} // Opens the modal
     >
       <svg 
         className="w-4 h-4"
@@ -904,6 +814,7 @@ const WhatsAppModal = () => {
           )}
         </div>
       </main>
+      {isWhatsAppModalOpen && <WhatsAppModal />}
     </div>
     </>
   )
