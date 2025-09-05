@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -255,97 +255,186 @@ export default function StudentPortal() {
   }
 
 // Add this component before the return statement
-const WhatsAppModal = () => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-96">
-      <h3 className="text-lg font-semibold mb-4">Send Report via WhatsApp</h3>
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="whatsapp-number" className="text-sm font-medium text-gray-700">
-            Mobile Number
-          </Label>
-          <Input
-            id="whatsapp-number"
-            placeholder="Enter mobile number (e.g., 91XXXXXXXXXX)"
-            value={whatsappNumber}
-            onChange={(e) => setWhatsappNumber(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-        <div className="flex justify-end space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => setIsWhatsAppModalOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSendReport}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            Send
-          </Button>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+const WhatsAppModal = () => {
+  const [localNumber, setLocalNumber] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-// Update the LoginModal component
-const LoginModal = () => {
-  if (!isLoginModalOpen) return null;
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleSendWhatsApp = () => {
+    if (localNumber.trim().length < 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    const formattedNumber = localNumber.replace(/\D/g, '');
+    const message = `*Student Academic Report*%0a%0a` +
+      `*Student Name:* ${studentDetails?.name || "N/A"}%0a` +
+      `*ID:* ${studentDetails?.id || "N/A"}%0a` +
+      `*Semester:* ${currentSemester || "N/A"}%0a` +
+      `*Overall CGPA:* ${overallCGPA || "N/A"}%0a` +
+      `*Backlogs:* ${backlogs || "N/A"}%0a%0a` +
+      `For more details, please contact the department.`;
+
+    window.open(
+      `https://wa.me/${formattedNumber}?text=${message}`,
+      '_blank'
+    );
+
+    setIsWhatsAppModalOpen(false);
+    setLocalNumber("");
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h3 className="text-lg font-semibold text-red-900 mb-4 text-center">Login</h3>
+      <div className="bg-white rounded-lg p-6 w-96" onClick={e => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-red-900 mb-4 text-center">Send Report via WhatsApp</h3>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="login-id" className="text-sm font-medium text-gray-700">
+            <label htmlFor="whatsapp-number" className="block text-sm font-medium text-gray-700">
+              Mobile Number
+            </label>
+            <input
+              ref={inputRef}
+              id="whatsapp-number"
+              type="text"
+              value={localNumber}
+              onChange={(e) => setLocalNumber(e.target.value)}
+              className="mt-1 block w-full h-12 rounded-md border border-gray-300 px-3 py-2 text-sm 
+                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Enter mobile number (e.g., 91XXXXXXXXXX)"
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => {
+                setIsWhatsAppModalOpen(false);
+                setLocalNumber("");
+              }}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSendWhatsApp}
+              className="px-4 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Replace the existing LoginModal component with this simplified version
+const LoginModal: React.FC = () => {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [localLoginId, setLocalLoginId] = useState('');
+  const [localPassword, setLocalPassword] = useState('');
+
+  useEffect(() => {
+    if (isLoginModalOpen) {
+      setLocalLoginId('');
+      setLocalPassword('');
+    }
+  }, [isLoginModalOpen]);
+
+  const handleLocalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loginId: localLoginId,
+          loginPassword: localPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        setIsLoginModalOpen(false);
+        setLoggedInUser(localLoginId);
+        setLoginId('');
+        setLoginPassword('');
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed. Please try again.");
+    }
+  };
+
+  if (!isLoginModalOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="bg-white rounded-lg shadow-lg p-6 w-96" onClick={e => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-red-900 mb-4 text-center">Login</h3>
+        <form ref={formRef} onSubmit={handleLocalSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="login-id" className="block text-sm font-medium text-gray-700">
               Username (ID)
-            </Label>
-            <Input
+            </label>
+            <input
               id="login-id"
               type="text"
-              value={loginId}
-              onChange={(e) => setLoginId(e.target.value)}
-              className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+              value={localLoginId}
+              onChange={(e) => setLocalLoginId(e.target.value)}
+              className="mt-1 block w-full h-12 rounded-md border border-gray-300 px-3 py-2 text-sm 
+                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               placeholder="Enter your ID"
             />
           </div>
           <div>
-            <Label htmlFor="login-password" className="text-sm font-medium text-gray-700">
+            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
               Password
-            </Label>
-            <Input
+            </label>
+            <input
               id="login-password"
               type="password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+              value={localPassword}
+              onChange={(e) => setLocalPassword(e.target.value)}
+              className="mt-1 block w-full h-12 rounded-md border border-gray-300 px-3 py-2 text-sm 
+                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               placeholder="Enter your password"
             />
           </div>
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+          <div className="flex justify-end space-x-3 pt-2">
+            <button
+              type="button"
               onClick={() => {
                 setIsLoginModalOpen(false);
-                setLoginId("");
-                setLoginPassword("");
+                setLocalLoginId('');
+                setLocalPassword('');
               }}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
             >
               Cancel
-            </Button>
-            <Button
-              onClick={handleLogin}
+            </button>
+            <button
+              type="submit"
               className="px-4 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition"
             >
               Login
-            </Button>
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

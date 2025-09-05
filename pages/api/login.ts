@@ -3,6 +3,11 @@ import { parse } from 'papaparse';
 import { readFileSync } from 'fs';
 import path from 'path';
 
+interface LoginRecord {
+  ID: string;
+  Password: string;
+}
+
 interface LoginResponse {
   success: boolean;
   message: string;
@@ -18,20 +23,25 @@ export default function handler(
 
   const { loginId, loginPassword } = req.body;
 
+  if (!loginId || !loginPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'ID and Password are required' 
+    });
+  }
+
   try {
     const csvFilePath = path.join(process.cwd(), 'components', 'login.csv');
     const fileContent = readFileSync(csvFilePath, 'utf-8');
     
-    const parseResult = parse(fileContent, {
+    const parseResult = parse<LoginRecord>(fileContent, {
       header: true,
       skipEmptyLines: true
     });
 
     const records = parseResult.data;
-    const user = records.find(
-      (record: any) => 
-        record.ID === loginId && 
-        record.Password === loginPassword
+    const user = records.find(record => 
+      record.ID === loginId && record.Password === loginPassword
     );
 
     if (user) {
