@@ -837,7 +837,7 @@ const handleLogout = () => {
                   </Label>
                   <Input
                     id="university-id"
-                    placeholder="Enter University ID (e.g., 2025001234)"
+                    placeholder="Enter University ID (e.g., 2300031699)"
                     value={universityId}
                     onChange={(e) => setUniversityId(e.target.value)}
                     onKeyPress={(e) => {
