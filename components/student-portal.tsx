@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { User, GraduationCap, Calendar, Printer, Search, Award, MapPin, BookOpen } from "lucide-react"
 import { getStudentAttendance } from "@/utils/csvParser"
+import { parse } from "papaparse";
 
 interface AttendanceRecord {
   studentId: string
@@ -115,7 +116,27 @@ export default function StudentPortal() {
   // Add this state at the top with other states
   const [backlogs, setBacklogs] = useState<number>(0);
 
+  // Add these states at the top of the StudentPortal component
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [loginId, setLoginId] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [loggedInUser, setLoggedInUser] = useState("");
+
+  // Define the LoginRecord interface for CSV parsing
+  interface LoginRecord {
+    ID: string;
+    Password: string;
+  }
+
   const handleSubmit = async () => {
+    if (!isLoggedIn) {
+      alert("Please login first to view student details");
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     if (universityId.trim().length > 0) {
       try {
         setError(null);
@@ -162,9 +183,9 @@ export default function StudentPortal() {
           return;
         }
 
-        setAttendanceData(attendanceData)
-        setDisplayedId(universityId)
-        setIsSubmitted(true)
+        setAttendanceData(attendanceData);
+        setDisplayedId(universityId);
+        setIsSubmitted(true);
 
         // Fetch semester results and calculate backlogs
         const resultsResponse = await fetch(`/api/results?studentId=${universityId}`);
@@ -181,12 +202,14 @@ export default function StudentPortal() {
         }, 0);
         setBacklogs(failedCoursesCount);
       } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try again.")
-        setIsSubmitted(false)
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data. Please try again.");
+        setIsSubmitted(false);
         setOverallCGPA("N/A");
         setBacklogs(0);
       }
+    } else {
+      alert("Please enter a valid University ID.");
     }
   }
 
@@ -268,8 +291,106 @@ const WhatsAppModal = () => (
   </div>
 );
 
+// Update the LoginModal component
+const LoginModal = () => {
+  if (!isLoginModalOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h3 className="text-lg font-semibold text-red-900 mb-4 text-center">Login</h3>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="login-id" className="text-sm font-medium text-gray-700">
+              Username (ID)
+            </Label>
+            <Input
+              id="login-id"
+              type="text"
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
+              className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+              placeholder="Enter your ID"
+            />
+          </div>
+          <div>
+            <Label htmlFor="login-password" className="text-sm font-medium text-gray-700">
+              Password
+            </Label>
+            <Input
+              id="login-password"
+              type="password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              className="mt-1 h-12 border-gray-300 focus:border-red-500 focus:ring-red-500"
+              placeholder="Enter your password"
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+              onClick={() => {
+                setIsLoginModalOpen(false);
+                setLoginId("");
+                setLoginPassword("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleLogin}
+              className="px-4 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition"
+            >
+              Login
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loginId,
+          loginPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        setIsLoginModalOpen(false);
+        setLoggedInUser(loginId); // Store the logged-in username
+        setLoginId("");
+        setLoginPassword("");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed. Please try again.");
+    }
+  };
+
+  // Update the handleLogout function
+const handleLogout = () => {
+  setIsLoggedIn(false);
+  setLoggedInUser("");
+  setIsDropdownOpen(false);
+};
+
   return (
     <>
+
       {/* Print-only view */}
       <div className="hidden print:block">
         <div style={{ padding: '15px', fontSize: '9pt', maxHeight: '100vh' }}>
@@ -402,7 +523,11 @@ const WhatsAppModal = () => (
 
           <div style={{ marginBottom: '15px', paddingTop: '15px', borderTop: '1px solid #000' }}>
   <h2 style={{ fontSize: '11pt', fontWeight: 'bold', marginBottom: '3px' }}>Academic Performance</h2>
-  <div style={{ marginBottom: '8px', fontSize: '9pt' }}>  <pre>Overall CGPA: {overallCGPA}           Backlogs: {backlogs}</pre></div>
+  {/* Remove the p tag and use div instead */}
+  <div style={{ marginBottom: '8px', fontSize: '9pt', display: 'flex', gap: '2rem' }}>
+    <span>Overall CGPA: {overallCGPA}</span>
+    <span>Backlogs: {backlogs}</span>
+  </div>
   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
     {semesterResults.slice(0, visibleSemesters).map((semester, semIndex) => (
       <div key={semIndex} style={{ border: '2px solid #000', padding: '8px', borderRadius: '4px' }}>
@@ -532,6 +657,58 @@ const WhatsAppModal = () => (
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
+              {/* Add Login Button */}
+              {isLoggedIn ? (
+  <div className="relative">
+    <Button
+      variant="outline"
+      className="px-4 py-2 bg-red-800 text-white rounded hover:bg-red-700 transition flex items-center space-x-2"
+      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+    >
+      <span>{loggedInUser}</span>
+      <svg
+        className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </Button>
+    
+    {isDropdownOpen && (
+      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+        <div className="py-1" role="menu" aria-orientation="vertical">
+          <button
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            onClick={handleLogout}
+            role="menuitem"
+          >
+            <div className="flex items-center space-x-2">
+              <svg 
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+) : (
+  <Button
+    variant="outline"
+    className="px-4 py-2 bg-red-800 text-white rounded hover:bg-red-700 transition"
+    onClick={() => setIsLoginModalOpen(true)}
+  >
+    Login
+  </Button>
+)}
             </div>
           </div>
         </div>
@@ -572,7 +749,6 @@ const WhatsAppModal = () => (
                 </div>
                 <Button 
                   onClick={handleSubmit}
-                  disabled={!universityId} 
                   className="h-12 px-8 bg-red-900 hover:bg-red-800 text-white"
                 >
                   Submit
@@ -815,6 +991,7 @@ const WhatsAppModal = () => (
         </div>
       </main>
       {isWhatsAppModalOpen && <WhatsAppModal />}
+      <LoginModal />
     </div>
     </>
   )
