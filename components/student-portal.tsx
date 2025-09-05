@@ -505,6 +505,7 @@ const handleLogout = () => {
       />
     </div>
 
+    {/* Print-only view header with student name */}
     <div style={{
       flex: 1,
       textAlign: 'center'
@@ -522,8 +523,15 @@ const handleLogout = () => {
       }}>
         Department of CSE-4
       </p>
-      <p style={{ fontSize: '9pt' }}>
-        Student Academic Report - ID: {displayedId}
+      <p style={{ 
+        fontSize: '12pt',
+        fontWeight: 'bold',
+        marginBottom: '5px'
+      }}>
+        Student Academic Report
+      </p>
+      <p style={{ fontSize: '10pt' }}>
+        Name: {studentDetails?.name || "N/A"} | ID: {displayedId}
       </p>
     </div>
   </div>
@@ -552,7 +560,41 @@ const handleLogout = () => {
       }}>From:</p>
       <div style={{ lineHeight: '1.4' }}>
         <p>Name: Dr.T Pavan Kumar</p>
-        <p>Designation : HOD-CSE4</p>
+        <p>Designation: HOD-CSE4</p>
+      </div>
+      {/* Add the signature heading */}
+      <p style={{ 
+        fontSize: '8pt',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: '8px',
+        marginBottom: '4px',
+        borderBottom: '1px solid #000',
+        paddingBottom: '2px'
+      }}>
+        Signature
+      </p>
+      <div style={{
+        width: '100%',
+        height: '60px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        border: '1px solid #000',
+        padding: '4px'
+      }}>
+        <Image 
+          src="/Signature.jpg" 
+          alt="HOD Signature"
+          width={180}
+          height={50}
+          style={{
+            objectFit: 'contain',
+            maxWidth: '100%',
+            maxHeight: '100%'
+          }}
+        />
       </div>
     </div>
 
