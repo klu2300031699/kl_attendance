@@ -758,7 +758,6 @@ const handleLogout = () => {
             </div>
             <div className="flex items-center space-x-4">
                             <div className="text-right">
-  <p className="text-white font-semibold">{studentName || 'Student Name'}</p>
   <p className="text-red-100 text-sm">ID: {displayedId}</p>
 </div>
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
