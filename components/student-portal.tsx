@@ -603,7 +603,25 @@ const handleLogout = () => {
                   <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                     <td style={{ padding: '4px' }}>{course.courseCode}</td>
                     <td style={{ padding: '4px' }}>{course.name}</td>
-                    <td style={{ padding: '4px', textAlign: 'right' }}>{course.attendance}%</td>
+                    <td 
+                      style={{ 
+                        padding: '4px', 
+                        textAlign: 'right',
+                        color: course.attendance >= 85 
+                          ? '#166534' // green-700
+                          : course.attendance >= 75 
+                          ? '#9a3412' // orange-700
+                          : '#dc2626', // red-600
+                        backgroundColor: course.attendance >= 85
+                          ? '#dcfce7' // green-100
+                          : course.attendance >= 75
+                          ? '#ffedd5' // orange-100
+                          : '#fee2e2', // red-100
+                        borderRadius: '4px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      {course.attendance}%</td>
                   </tr>
                 ))}
               </tbody>
